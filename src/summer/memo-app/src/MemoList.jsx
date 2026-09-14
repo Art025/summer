@@ -1,10 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function MemoList() {
-  const [memos, setMemos] = useState([
-    { title: '朝の予定', body: 'TODOリストを整理する' },
-    { title: '買い物', body: 'パンと牛乳を買う' },
-  ])
+  const [memos, setMemos] = useState(() => {
+    const savedMemos = localStorage.getItem('memo-list')
+    if (!savedMemos) {
+      return [
+        { title: '朝の予定', body: 'TODOリストを整理する' },
+        { title: '買い物', body: 'パンと牛乳を買う' },
+      ]
+    }
+
+    try {
+      return JSON.parse(savedMemos)
+    } catch {
+      return [
+        { title: '朝の予定', body: 'TODOリストを整理する' },
+        { title: '買い物', body: 'パンと牛乳を買う' },
+      ]
+    }
+  })
 
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
@@ -12,6 +26,10 @@ export default function MemoList() {
   const [editingIndex, setEditingIndex] = useState(null)
   const [editTitle, setEditTitle] = useState('')
   const [editBody, setEditBody] = useState('')
+
+  useEffect(() => {
+    localStorage.setItem('memo-list', JSON.stringify(memos))
+  }, [memos])
 
   const addMemo = (event) => {
     event.preventDefault()
