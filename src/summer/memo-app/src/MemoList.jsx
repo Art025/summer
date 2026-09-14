@@ -61,6 +61,20 @@ export default function MemoList() {
     setEditBody('')
   }
 
+  const deleteMemo = (index) => {
+    setMemos((currentMemos) => currentMemos.filter((_, memoIndex) => memoIndex !== index))
+
+    if (selectedIndex === index) {
+      setSelectedIndex(null)
+    }
+
+    if (editingIndex === index) {
+      setEditingIndex(null)
+      setEditTitle('')
+      setEditBody('')
+    }
+  }
+
   return (
     <section>
       <h2>メモ一覧</h2>
@@ -96,6 +110,9 @@ export default function MemoList() {
             </button>
             <button type="button" onClick={() => startEdit(index)}>
               編集
+            </button>
+            <button type="button" onClick={() => deleteMemo(index)}>
+              削除
             </button>
 
             {editingIndex === index && (
