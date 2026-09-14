@@ -6,10 +6,24 @@ export default function MemoList() {
   const [memos, setMemos] = useState([])
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
+  const [searchText, setSearchText] = useState('')
   const [selectedId, setSelectedId] = useState(null)
   const [editingId, setEditingId] = useState(null)
   const [editTitle, setEditTitle] = useState('')
   const [editBody, setEditBody] = useState('')
+
+  const filteredMemos = memos.filter((memo) => {
+    const term = searchText.trim().toLowerCase()
+
+    if (!term) {
+      return true
+    }
+
+    return (
+      memo.title.toLowerCase().includes(term) ||
+      memo.body.toLowerCase().includes(term)
+    )
+  })
 
   useEffect(() => {
     fetch(API_URL)
@@ -99,6 +113,16 @@ export default function MemoList() {
     <section>
       <h2>メモ一覧</h2>
 
+      <div>
+        <label htmlFor="search">検索</label>
+        <input
+          id="search"
+          value={searchText}
+          onChange={(event) => setSearchText(event.target.value)}
+          placeholder="タイトルや本文を検索"
+        />
+      </div>
+
       <form onSubmit={addMemo}>
         <div>
           <label htmlFor="title">タイトル</label>
@@ -122,7 +146,7 @@ export default function MemoList() {
       </form>
 
       <ul>
-        {memos.map((memo) => (
+        {filteredMemos.map((memo) => (
           <li key={memo.id}>
             <button type="button" onClick={() => setSelectedId(memo.id)}>
               <h3>{memo.title}</h3>

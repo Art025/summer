@@ -6,10 +6,7 @@ const port = 3000;
 
 app.use(express.json());
 
-let memos = [
-  { id: '1', title: '朝の予定', body: 'TODOリストを整理する' },
-  { id: '2', title: '買い物', body: 'パンと牛乳を買う' },
-]
+let memos = []
 
 app.get('/api/memos', (req, res) => {
   res.json(memos)
