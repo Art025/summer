@@ -9,6 +9,9 @@ export default function MemoList() {
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(null)
+  const [editingIndex, setEditingIndex] = useState(null)
+  const [editTitle, setEditTitle] = useState('')
+  const [editBody, setEditBody] = useState('')
 
   const addMemo = (event) => {
     event.preventDefault()
@@ -23,6 +26,39 @@ export default function MemoList() {
     ])
     setTitle('')
     setBody('')
+  }
+
+  const startEdit = (index) => {
+    const memo = memos[index]
+    setEditingIndex(index)
+    setEditTitle(memo.title)
+    setEditBody(memo.body)
+    setSelectedIndex(index)
+  }
+
+  const saveEdit = (event) => {
+    event.preventDefault()
+
+    if (editingIndex === null) {
+      return
+    }
+
+    if (!editTitle.trim() || !editBody.trim()) {
+      return
+    }
+
+    setMemos((currentMemos) => {
+      const nextMemos = [...currentMemos]
+      nextMemos[editingIndex] = {
+        title: editTitle.trim(),
+        body: editBody.trim(),
+      }
+      return nextMemos
+    })
+
+    setEditingIndex(null)
+    setEditTitle('')
+    setEditBody('')
   }
 
   return (
@@ -58,6 +94,31 @@ export default function MemoList() {
               <h3>{memo.title}</h3>
               {selectedIndex === index && <p>{memo.body}</p>}
             </button>
+            <button type="button" onClick={() => startEdit(index)}>
+              編集
+            </button>
+
+            {editingIndex === index && (
+              <form onSubmit={saveEdit}>
+                <div>
+                  <label htmlFor="edit-title">タイトル</label>
+                  <input
+                    id="edit-title"
+                    value={editTitle}
+                    onChange={(event) => setEditTitle(event.target.value)}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="edit-body">本文</label>
+                  <textarea
+                    id="edit-body"
+                    value={editBody}
+                    onChange={(event) => setEditBody(event.target.value)}
+                  />
+                </div>
+                <button type="submit">保存</button>
+              </form>
+            )}
           </li>
         ))}
       </ul>
