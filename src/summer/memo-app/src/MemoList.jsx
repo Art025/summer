@@ -113,9 +113,10 @@ export default function MemoList() {
     <section>
       <h2>メモ一覧</h2>
 
-      <div>
-        <label htmlFor="search">検索</label>
+      <div className="memo-search-group">
+        <label className="memo-form-label" htmlFor="search">検索</label>
         <input
+          className="memo-form-input memo-search-input"
           id="search"
           value={searchText}
           onChange={(event) => setSearchText(event.target.value)}
@@ -123,26 +124,30 @@ export default function MemoList() {
         />
       </div>
 
-      <form onSubmit={addMemo}>
-        <div>
-          <label htmlFor="title">タイトル</label>
-          <input
-            id="title"
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-          />
+      <form className="memo-form" onSubmit={addMemo}>
+        <div className="memo-form-row">
+          <div className="memo-form-group">
+            <label className="memo-form-label" htmlFor="title">タイトル</label>
+            <input
+              className="memo-form-input"
+              id="title"
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+            />
+          </div>
+
+          <div className="memo-form-group">
+            <label className="memo-form-label" htmlFor="body">本文</label>
+            <textarea
+              className="memo-form-textarea"
+              id="body"
+              value={body}
+              onChange={(event) => setBody(event.target.value)}
+            />
+          </div>
         </div>
 
-        <div>
-          <label htmlFor="body">本文</label>
-          <textarea
-            id="body"
-            value={body}
-            onChange={(event) => setBody(event.target.value)}
-          />
-        </div>
-
-        <button type="submit">追加</button>
+        <button className="memo-form-submit" type="submit">追加</button>
       </form>
 
       <ul>
@@ -160,24 +165,26 @@ export default function MemoList() {
             </button>
 
             {editingId === memo.id && (
-              <form onSubmit={saveEdit}>
-                <div>
-                  <label htmlFor="edit-title">タイトル</label>
+              <form className="memo-form memo-form-edit" onSubmit={saveEdit}>
+                <div className="memo-form-group">
+                  <label className="memo-form-label" htmlFor="edit-title">タイトル</label>
                   <input
+                    className="memo-form-input"
                     id="edit-title"
                     value={editTitle}
                     onChange={(event) => setEditTitle(event.target.value)}
                   />
                 </div>
-                <div>
-                  <label htmlFor="edit-body">本文</label>
+                <div className="memo-form-group">
+                  <label className="memo-form-label" htmlFor="edit-body">本文</label>
                   <textarea
+                    className="memo-form-textarea"
                     id="edit-body"
                     value={editBody}
                     onChange={(event) => setEditBody(event.target.value)}
                   />
                 </div>
-                <button type="submit">保存</button>
+                <button className="memo-form-submit" type="submit">保存</button>
               </form>
             )}
           </li>

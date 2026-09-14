@@ -153,6 +153,64 @@
   }
 }
 
+.memo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
+}
+
+.memo-form-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  justify-content: center;
+}
+
+.memo-search-group,
+.memo-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+}
+
+.memo-search-group {
+  margin-bottom: 16px;
+}
+
+.memo-form-label {
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+}
+
+.memo-form-input,
+.memo-form-textarea {
+  width: min(420px, 100%);
+  display: block;
+  margin: 0 auto;
+}
+
+.memo-form-textarea {
+  min-height: 120px;
+  width: min(760px, 100%);
+}
+
+.memo-search-input {
+  width: min(420px, 100%);
+}
+
+.memo-form-submit {
+  margin-top: 8px;
+  padding: 12px 28px;
+  font-size: 16px;
+}
+
+.memo-form-edit {
+  margin-top: 12px;
+}
+
 #spacer {
   height: 88px;
   border-top: 1px solid var(--border);
