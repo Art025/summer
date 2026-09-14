@@ -8,6 +8,7 @@ export default function MemoList() {
 
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
+  const [selectedIndex, setSelectedIndex] = useState(null)
 
   const addMemo = (event) => {
     event.preventDefault()
@@ -53,8 +54,10 @@ export default function MemoList() {
       <ul>
         {memos.map((memo, index) => (
           <li key={index}>
-            <h3>{memo.title}</h3>
-            <p>{memo.body}</p>
+            <button type="button" onClick={() => setSelectedIndex(index)}>
+              <h3>{memo.title}</h3>
+              {selectedIndex === index && <p>{memo.body}</p>}
+            </button>
           </li>
         ))}
       </ul>
