@@ -227,6 +227,22 @@
   margin-top: 12px;
 }
 
+.memo-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.memo-complete-checkbox {
+  margin-right: 4px;
+}
+
+.memo-completed-title,
+.memo-completed-body {
+  text-decoration: line-through;
+  color: #8a8a8a;
+}
+
 #spacer {
   height: 88px;
   border-top: 1px solid var(--border);

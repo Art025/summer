@@ -13,7 +13,7 @@ app.get('/api/memos', (req, res) => {
 })
 
 app.post('/api/memos', (req, res) => {
-  const { title, body } = req.body
+  const { title, body, completed } = req.body
 
   if (!title || !body) {
     return res.status(400).json({ error: 'title and body are required' })
@@ -23,6 +23,7 @@ app.post('/api/memos', (req, res) => {
     id: randomUUID(),
     title: title.trim(),
     body: body.trim(),
+    completed: typeof completed === 'boolean' ? completed : false,
   }
 
   memos.push(newMemo)
@@ -31,7 +32,7 @@ app.post('/api/memos', (req, res) => {
 
 app.put('/api/memos/:id', (req, res) => {
   const { id } = req.params
-  const { title, body } = req.body
+  const { title, body, completed } = req.body
   const memo = memos.find((item) => item.id === id)
 
   if (!memo) {
@@ -44,6 +45,7 @@ app.put('/api/memos/:id', (req, res) => {
 
   memo.title = title.trim()
   memo.body = body.trim()
+  memo.completed = typeof completed === 'boolean' ? completed : memo.completed
 
   res.json(memo)
 })

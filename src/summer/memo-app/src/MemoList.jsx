@@ -77,10 +77,16 @@ export default function MemoList() {
       return
     }
 
+    const memo = memos.find((item) => item.id === editingId)
+
     const response = await fetch(`${API_URL}/${editingId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: editTitle.trim(), body: editBody.trim() }),
+      body: JSON.stringify({
+        title: editTitle.trim(),
+        body: editBody.trim(),
+        completed: memo ? memo.completed : false,
+      }),
     })
 
     if (!response.ok) {
@@ -95,6 +101,29 @@ export default function MemoList() {
     setEditingId(null)
     setEditTitle('')
     setEditBody('')
+  }
+
+  const toggleComplete = async (memo) => {
+    const nextCompleted = !memo.completed
+
+    const response = await fetch(`${API_URL}/${memo.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: memo.title,
+        body: memo.body,
+        completed: nextCompleted,
+      }),
+    })
+
+    if (!response.ok) {
+      return
+    }
+
+    const updatedMemo = await response.json()
+    setMemos((currentMemos) =>
+      currentMemos.map((item) => (item.id === updatedMemo.id ? updatedMemo : item))
+    )
   }
 
   const deleteMemo = async (memoId) => {
@@ -162,16 +191,27 @@ export default function MemoList() {
         <ul className="memo-list">
           {filteredMemos.map((memo) => (
             <li key={memo.id}>
-              <button type="button" onClick={() => setSelectedId(memo.id)}>
-                <h3>{memo.title}</h3>
-                {selectedId === memo.id && <p>{memo.body}</p>}
-              </button>
-              <button type="button" onClick={() => startEdit(memo)}>
-                編集
-              </button>
-              <button type="button" onClick={() => deleteMemo(memo.id)}>
-                削除
-              </button>
+              <div className="memo-row">
+                <input
+                  className="memo-complete-checkbox"
+                  type="checkbox"
+                  checked={memo.completed}
+                  onChange={() => toggleComplete(memo)}
+                  aria-label={memo.completed ? '未完了に戻す' : '完了にする'}
+                />
+                <button type="button" onClick={() => setSelectedId(memo.id)}>
+                  <h3 className={memo.completed ? 'memo-completed-title' : ''}>{memo.title}</h3>
+                  {selectedId === memo.id && (
+                    <p className={memo.completed ? 'memo-completed-body' : ''}>{memo.body}</p>
+                  )}
+                </button>
+                <button type="button" onClick={() => startEdit(memo)}>
+                  編集
+                </button>
+                <button type="button" onClick={() => deleteMemo(memo.id)}>
+                  削除
+                </button>
+              </div>
 
               {editingId === memo.id && (
                 <form className="memo-form memo-form-edit" onSubmit={saveEdit}>
