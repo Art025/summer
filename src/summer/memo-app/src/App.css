@@ -237,6 +237,22 @@
   margin-right: 4px;
 }
 
+.memo-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.memo-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #dff4ff;
+  color: #245a75;
+  font-size: 12px;
+}
+
 .memo-completed-title,
 .memo-completed-body {
   text-decoration: line-through;

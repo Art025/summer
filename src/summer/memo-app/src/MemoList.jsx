@@ -6,23 +6,23 @@ export default function MemoList() {
   const [memos, setMemos] = useState([])
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
+  const [tags, setTags] = useState('')
   const [searchText, setSearchText] = useState('')
+  const [tagFilter, setTagFilter] = useState('')
   const [selectedId, setSelectedId] = useState(null)
   const [editingId, setEditingId] = useState(null)
   const [editTitle, setEditTitle] = useState('')
   const [editBody, setEditBody] = useState('')
+  const [editTags, setEditTags] = useState('')
 
   const filteredMemos = memos.filter((memo) => {
     const term = searchText.trim().toLowerCase()
+    const tagTerm = tagFilter.trim().toLowerCase()
 
-    if (!term) {
-      return true
-    }
+    const matchesText = !term || memo.title.toLowerCase().includes(term) || memo.body.toLowerCase().includes(term)
+    const matchesTag = !tagTerm || (memo.tags || []).some((memoTag) => memoTag.toLowerCase().includes(tagTerm))
 
-    return (
-      memo.title.toLowerCase().includes(term) ||
-      memo.body.toLowerCase().includes(term)
-    )
+    return matchesText && matchesTag
   })
 
   useEffect(() => {
@@ -43,10 +43,15 @@ export default function MemoList() {
     }
 
     try {
+      const parsedTags = tags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+
       const response = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: cleanTitle, body: cleanBody }),
+        body: JSON.stringify({ title: cleanTitle, body: cleanBody, tags: parsedTags }),
       })
 
       if (!response.ok) {
@@ -58,6 +63,7 @@ export default function MemoList() {
       setMemos((currentMemos) => [...currentMemos, createdMemo])
       setTitle('')
       setBody('')
+      setTags('')
     } catch (error) {
       console.error(error)
     }
@@ -67,6 +73,7 @@ export default function MemoList() {
     setEditingId(memo.id)
     setEditTitle(memo.title)
     setEditBody(memo.body)
+    setEditTags((memo.tags || []).join(', '))
     setSelectedId(memo.id)
   }
 
@@ -78,6 +85,10 @@ export default function MemoList() {
     }
 
     const memo = memos.find((item) => item.id === editingId)
+    const parsedTags = editTags
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean)
 
     const response = await fetch(`${API_URL}/${editingId}`, {
       method: 'PUT',
@@ -86,6 +97,7 @@ export default function MemoList() {
         title: editTitle.trim(),
         body: editBody.trim(),
         completed: memo ? memo.completed : false,
+        tags: parsedTags,
       }),
     })
 
@@ -101,6 +113,7 @@ export default function MemoList() {
     setEditingId(null)
     setEditTitle('')
     setEditBody('')
+    setEditTags('')
   }
 
   const toggleComplete = async (memo) => {
@@ -113,6 +126,7 @@ export default function MemoList() {
         title: memo.title,
         body: memo.body,
         completed: nextCompleted,
+        tags: memo.tags || [],
       }),
     })
 
@@ -170,6 +184,17 @@ export default function MemoList() {
             />
           </div>
 
+          <div className="memo-form-group">
+            <label className="memo-form-label" htmlFor="tags">タグ</label>
+            <input
+              className="memo-form-input"
+              id="tags"
+              value={tags}
+              onChange={(event) => setTags(event.target.value)}
+              placeholder="仕事, 家"
+            />
+          </div>
+
           <button className="memo-form-submit" type="submit">追加</button>
         </form>
       </section>
@@ -185,6 +210,17 @@ export default function MemoList() {
             value={searchText}
             onChange={(event) => setSearchText(event.target.value)}
             placeholder="タイトルや本文を検索"
+          />
+        </div>
+
+        <div className="memo-search-group">
+          <label className="memo-form-label" htmlFor="tag-filter">タグ絞り込み</label>
+          <input
+            className="memo-form-input memo-search-input"
+            id="tag-filter"
+            value={tagFilter}
+            onChange={(event) => setTagFilter(event.target.value)}
+            placeholder="タグを入力"
           />
         </div>
 
@@ -204,6 +240,11 @@ export default function MemoList() {
                   {selectedId === memo.id && (
                     <p className={memo.completed ? 'memo-completed-body' : ''}>{memo.body}</p>
                   )}
+                  <span className="memo-tag-list">
+                    {(memo.tags || []).map((tag) => (
+                      <span className="memo-tag" key={tag}>{tag}</span>
+                    ))}
+                  </span>
                 </button>
                 <button type="button" onClick={() => startEdit(memo)}>
                   編集
@@ -231,6 +272,15 @@ export default function MemoList() {
                       id="edit-body"
                       value={editBody}
                       onChange={(event) => setEditBody(event.target.value)}
+                    />
+                  </div>
+                  <div className="memo-form-group">
+                    <label className="memo-form-label" htmlFor="edit-tags">タグ</label>
+                    <input
+                      className="memo-form-input"
+                      id="edit-tags"
+                      value={editTags}
+                      onChange={(event) => setEditTags(event.target.value)}
                     />
                   </div>
                   <button className="memo-form-submit" type="submit">保存</button>
