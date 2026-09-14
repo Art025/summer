@@ -1,3 +1,3 @@
 export default function MemoAppTitle() {
-  return <h1>My Memo App</h1>;
+  return <h1>メモ管理アプリ</h1>;
 }
