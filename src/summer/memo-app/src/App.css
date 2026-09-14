@@ -153,6 +153,22 @@
   }
 }
 
+.memo-layout {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.memo-form-panel {
+  flex: 3;
+  min-width: 280px;
+}
+
+.memo-list-panel {
+  flex: 7;
+  min-width: 0;
+}
+
 .memo-form {
   display: flex;
   flex-direction: column;

@@ -35,24 +35,32 @@ export default function MemoList() {
   const addMemo = async (event) => {
     event.preventDefault()
 
-    if (!title.trim() || !body.trim()) {
+    const cleanTitle = title.trim()
+    const cleanBody = body.trim()
+
+    if (!cleanTitle || !cleanBody) {
       return
     }
 
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: title.trim(), body: body.trim() }),
-    })
+    try {
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: cleanTitle, body: cleanBody }),
+      })
 
-    if (!response.ok) {
-      return
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'failed to add memo' }))
+        throw new Error(errorData.error || 'failed to add memo')
+      }
+
+      const createdMemo = await response.json()
+      setMemos((currentMemos) => [...currentMemos, createdMemo])
+      setTitle('')
+      setBody('')
+    } catch (error) {
+      console.error(error)
     }
-
-    const createdMemo = await response.json()
-    setMemos((currentMemos) => [...currentMemos, createdMemo])
-    setTitle('')
-    setBody('')
   }
 
   const startEdit = (memo) => {
@@ -110,22 +118,9 @@ export default function MemoList() {
   }
 
   return (
-    <section>
-      <h2>メモ一覧</h2>
-
-      <div className="memo-search-group">
-        <label className="memo-form-label" htmlFor="search">検索</label>
-        <input
-          className="memo-form-input memo-search-input"
-          id="search"
-          value={searchText}
-          onChange={(event) => setSearchText(event.target.value)}
-          placeholder="タイトルや本文を検索"
-        />
-      </div>
-
-      <form className="memo-form" onSubmit={addMemo}>
-        <div className="memo-form-row">
+    <section className="memo-layout">
+      <section className="memo-form-panel">
+        <form className="memo-form" onSubmit={addMemo}>
           <div className="memo-form-group">
             <label className="memo-form-label" htmlFor="title">タイトル</label>
             <input
@@ -145,51 +140,66 @@ export default function MemoList() {
               onChange={(event) => setBody(event.target.value)}
             />
           </div>
+
+          <button className="memo-form-submit" type="submit">追加</button>
+        </form>
+      </section>
+
+      <section className="memo-list-panel">
+        <h2>メモ一覧</h2>
+
+        <div className="memo-search-group">
+          <label className="memo-form-label" htmlFor="search">検索</label>
+          <input
+            className="memo-form-input memo-search-input"
+            id="search"
+            value={searchText}
+            onChange={(event) => setSearchText(event.target.value)}
+            placeholder="タイトルや本文を検索"
+          />
         </div>
 
-        <button className="memo-form-submit" type="submit">追加</button>
-      </form>
+        <ul className="memo-list">
+          {filteredMemos.map((memo) => (
+            <li key={memo.id}>
+              <button type="button" onClick={() => setSelectedId(memo.id)}>
+                <h3>{memo.title}</h3>
+                {selectedId === memo.id && <p>{memo.body}</p>}
+              </button>
+              <button type="button" onClick={() => startEdit(memo)}>
+                編集
+              </button>
+              <button type="button" onClick={() => deleteMemo(memo.id)}>
+                削除
+              </button>
 
-      <ul>
-        {filteredMemos.map((memo) => (
-          <li key={memo.id}>
-            <button type="button" onClick={() => setSelectedId(memo.id)}>
-              <h3>{memo.title}</h3>
-              {selectedId === memo.id && <p>{memo.body}</p>}
-            </button>
-            <button type="button" onClick={() => startEdit(memo)}>
-              編集
-            </button>
-            <button type="button" onClick={() => deleteMemo(memo.id)}>
-              削除
-            </button>
-
-            {editingId === memo.id && (
-              <form className="memo-form memo-form-edit" onSubmit={saveEdit}>
-                <div className="memo-form-group">
-                  <label className="memo-form-label" htmlFor="edit-title">タイトル</label>
-                  <input
-                    className="memo-form-input"
-                    id="edit-title"
-                    value={editTitle}
-                    onChange={(event) => setEditTitle(event.target.value)}
-                  />
-                </div>
-                <div className="memo-form-group">
-                  <label className="memo-form-label" htmlFor="edit-body">本文</label>
-                  <textarea
-                    className="memo-form-textarea"
-                    id="edit-body"
-                    value={editBody}
-                    onChange={(event) => setEditBody(event.target.value)}
-                  />
-                </div>
-                <button className="memo-form-submit" type="submit">保存</button>
-              </form>
-            )}
-          </li>
-        ))}
-      </ul>
+              {editingId === memo.id && (
+                <form className="memo-form memo-form-edit" onSubmit={saveEdit}>
+                  <div className="memo-form-group">
+                    <label className="memo-form-label" htmlFor="edit-title">タイトル</label>
+                    <input
+                      className="memo-form-input"
+                      id="edit-title"
+                      value={editTitle}
+                      onChange={(event) => setEditTitle(event.target.value)}
+                    />
+                  </div>
+                  <div className="memo-form-group">
+                    <label className="memo-form-label" htmlFor="edit-body">本文</label>
+                    <textarea
+                      className="memo-form-textarea"
+                      id="edit-body"
+                      value={editBody}
+                      onChange={(event) => setEditBody(event.target.value)}
+                    />
+                  </div>
+                  <button className="memo-form-submit" type="submit">保存</button>
+                </form>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
     </section>
   )
 }
