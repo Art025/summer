@@ -1,93 +1,95 @@
 import { useEffect, useState } from 'react'
 
+const API_URL = '/api/memos'
+
 export default function MemoList() {
-  const [memos, setMemos] = useState(() => {
-    const savedMemos = localStorage.getItem('memo-list')
-    if (!savedMemos) {
-      return [
-        { title: '朝の予定', body: 'TODOリストを整理する' },
-        { title: '買い物', body: 'パンと牛乳を買う' },
-      ]
-    }
-
-    try {
-      return JSON.parse(savedMemos)
-    } catch {
-      return [
-        { title: '朝の予定', body: 'TODOリストを整理する' },
-        { title: '買い物', body: 'パンと牛乳を買う' },
-      ]
-    }
-  })
-
+  const [memos, setMemos] = useState([])
   const [title, setTitle] = useState('')
   const [body, setBody] = useState('')
-  const [selectedIndex, setSelectedIndex] = useState(null)
-  const [editingIndex, setEditingIndex] = useState(null)
+  const [selectedId, setSelectedId] = useState(null)
+  const [editingId, setEditingId] = useState(null)
   const [editTitle, setEditTitle] = useState('')
   const [editBody, setEditBody] = useState('')
 
   useEffect(() => {
-    localStorage.setItem('memo-list', JSON.stringify(memos))
-  }, [memos])
+    fetch(API_URL)
+      .then((response) => response.json())
+      .then((items) => setMemos(items))
+      .catch(() => setMemos([]))
+  }, [])
 
-  const addMemo = (event) => {
+  const addMemo = async (event) => {
     event.preventDefault()
 
     if (!title.trim() || !body.trim()) {
       return
     }
 
-    setMemos((currentMemos) => [
-      ...currentMemos,
-      { title: title.trim(), body: body.trim() },
-    ])
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: title.trim(), body: body.trim() }),
+    })
+
+    if (!response.ok) {
+      return
+    }
+
+    const createdMemo = await response.json()
+    setMemos((currentMemos) => [...currentMemos, createdMemo])
     setTitle('')
     setBody('')
   }
 
-  const startEdit = (index) => {
-    const memo = memos[index]
-    setEditingIndex(index)
+  const startEdit = (memo) => {
+    setEditingId(memo.id)
     setEditTitle(memo.title)
     setEditBody(memo.body)
-    setSelectedIndex(index)
+    setSelectedId(memo.id)
   }
 
-  const saveEdit = (event) => {
+  const saveEdit = async (event) => {
     event.preventDefault()
 
-    if (editingIndex === null) {
+    if (!editingId || !editTitle.trim() || !editBody.trim()) {
       return
     }
 
-    if (!editTitle.trim() || !editBody.trim()) {
-      return
-    }
-
-    setMemos((currentMemos) => {
-      const nextMemos = [...currentMemos]
-      nextMemos[editingIndex] = {
-        title: editTitle.trim(),
-        body: editBody.trim(),
-      }
-      return nextMemos
+    const response = await fetch(`${API_URL}/${editingId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: editTitle.trim(), body: editBody.trim() }),
     })
 
-    setEditingIndex(null)
+    if (!response.ok) {
+      return
+    }
+
+    const updatedMemo = await response.json()
+    setMemos((currentMemos) =>
+      currentMemos.map((memo) => (memo.id === updatedMemo.id ? updatedMemo : memo))
+    )
+
+    setEditingId(null)
     setEditTitle('')
     setEditBody('')
   }
 
-  const deleteMemo = (index) => {
-    setMemos((currentMemos) => currentMemos.filter((_, memoIndex) => memoIndex !== index))
+  const deleteMemo = async (memoId) => {
+    const response = await fetch(`${API_URL}/${memoId}`, { method: 'DELETE' })
 
-    if (selectedIndex === index) {
-      setSelectedIndex(null)
+    if (!response.ok) {
+      return
     }
 
-    if (editingIndex === index) {
-      setEditingIndex(null)
+    setMemos((currentMemos) => currentMemos.filter((memo) => memo.id !== memoId))
+
+    if (selectedId === memoId) {
+      setSelectedId(null)
+    }
+
+    if (editingId === memoId) {
+      setEditingId(null)
       setEditTitle('')
       setEditBody('')
     }
@@ -120,20 +122,20 @@ export default function MemoList() {
       </form>
 
       <ul>
-        {memos.map((memo, index) => (
-          <li key={index}>
-            <button type="button" onClick={() => setSelectedIndex(index)}>
+        {memos.map((memo) => (
+          <li key={memo.id}>
+            <button type="button" onClick={() => setSelectedId(memo.id)}>
               <h3>{memo.title}</h3>
-              {selectedIndex === index && <p>{memo.body}</p>}
+              {selectedId === memo.id && <p>{memo.body}</p>}
             </button>
-            <button type="button" onClick={() => startEdit(index)}>
+            <button type="button" onClick={() => startEdit(memo)}>
               編集
             </button>
-            <button type="button" onClick={() => deleteMemo(index)}>
+            <button type="button" onClick={() => deleteMemo(memo.id)}>
               削除
             </button>
 
-            {editingIndex === index && (
+            {editingId === memo.id && (
               <form onSubmit={saveEdit}>
                 <div>
                   <label htmlFor="edit-title">タイトル</label>
